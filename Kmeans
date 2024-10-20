@@ -1,0 +1,56 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+X = np.random.rand(100, 2)
+
+
+def initialize_k_centroids(X, k):
+    random_indices = np.random.choice(X.shape[0], k, replace=False) #select random indices from a list of 100 rows
+    centroids = X[random_indices, :]  # create an lsit of randomly selected indices with both column values
+    return centroids
+
+
+def assign_clusters(X, centroids):
+    clusters = []
+    for point in X:
+        distance = np.linalg.norm(point - centroids, axis=1) #saare cetroids se distance nikala
+        closest_centroid = np.argmin(distance)#minimum distance ko consider kiya 
+        clusters.append(closest_centroid) #clusters array mai minimum woh centroid ko apppend kar diya
+    return np.array(clusters)
+
+
+def update_centroid(X, clusters, k):
+    new_centroids = np.zeros((k, X.shape[1]))
+    for i in range(k):
+        points_in_cluster = X[clusters == i]
+        new_centroids[i] = np.mean(points_in_cluster, axis=0)
+    return new_centroids
+
+
+def kmeans(X, k, max_iter=100, tol=1e-4):
+    centroid = initialize_k_centroids(X, k)
+    for i in range(max_iter):
+        old_centroid = centroid.copy()
+        clusters = assign_clusters(X, centroid)
+        centroid = update_centroid(X, clusters, k)
+        
+        if np.linalg.norm(centroid - old_centroid)<tol:
+            break
+    return centroid, clusters
+
+    
+def plot_clusters(X, clusters, centroids):
+    plt.scatter(X[:, 0], X[:, 1], c=clusters, cmap='viridis', marker='o')
+    plt.scatter(centroids[:, 0], centroids[:, 1], s=300, c='red', label='Centroids')
+    plt.title("K-Means Clustering")
+    plt.legend()
+    plt.show()
+
+
+k = 3  # number of clusters
+centroids, clusters = kmeans(X, k)
+
+# Visualizing the clusters
+plot_clusters(X, clusters, centroids)
+
